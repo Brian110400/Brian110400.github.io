@@ -85,6 +85,18 @@ section{padding:76px 0}
 .ba-cap p{color:var(--muted);font-size:14.5px}
 .gallery-more{text-align:center;margin-top:36px;color:var(--muted)}
 .gallery-more a{color:var(--red);font-weight:700}
+/* blog preview */
+.blog-preview{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.blog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.blog-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;text-decoration:none;transition:transform .15s,border-color .15s;display:block}
+.blog-card:hover{transform:translateY(-4px);border-color:rgba(224,50,45,.55)}
+.blog-card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.blog-card-body{padding:22px}
+.blog-kicker{display:inline-block;background:rgba(224,50,45,.15);border:1px solid rgba(224,50,45,.5);color:#ffb4b0;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:10px}
+.blog-card-body h3{font-size:18px;margin-bottom:6px;line-height:1.35}
+.blog-card-body p{color:var(--muted);font-size:14.5px}
+.blog-more{text-align:center;margin-top:32px}
+.blog-more .btn-outline{color:var(--text);text-decoration:none}
 /* contact */
 .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:stretch}
 @media(max-width:820px){.contact-grid{grid-template-columns:1fr}}
@@ -137,6 +149,7 @@ footer{border-top:1px solid var(--line);padding:36px 0;color:var(--muted);font-s
       <a href="#services">Services</a>
       <a href="#process">How It Works</a>
       <a href="#work">Our Work</a>
+      <a href="blog.html">Blog</a>
       <a href="#contact">Contact</a>
       <a class="btn btn-call" href="tel:+18644751057">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
@@ -304,6 +317,30 @@ footer{border-top:1px solid var(--line);padding:36px 0;color:var(--muted);font-s
       </div>
     </div>
     <p class="gallery-more">More transformations going up on our <a href="https://www.facebook.com/225211757508941" target="_blank" rel="noopener">Facebook page</a> every few days.</p>
+  </div>
+</section>
+
+<section class="blog-preview">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>From the <span>shop</span></h2>
+      <p>Straight answers about collision repair, costs, and accidents — from the folks who fix them every day.</p>
+    </div>
+    <div class="blog-grid">
+      <a class="blog-card" href="blog/what-to-do-after-fender-bender-sc.html">
+        <img src="gallery/blog-rear-bumper-dent.jpg" alt="Rear bumper dent and scuff damage on a sedan">
+        <div class="blog-card-body"><span class="blog-kicker">After an accident</span><h3>What to Do After a Fender Bender in South Carolina</h3><p>The exact steps to take — and why you choose the shop, not your insurer.</p></div>
+      </a>
+      <a class="blog-card" href="blog/hit-a-deer-south-carolina.html">
+        <img src="gallery/rav4-before.jpg" alt="Front-end collision damage from a deer strike before repair">
+        <div class="blog-card-body"><span class="blog-kicker">Deer season</span><h3>Hit a Deer in South Carolina? Here's What to Do Next</h3><p>Peak season playbook: roadside steps, insurance, and the repair.</p></div>
+      </a>
+      <a class="blog-card" href="blog/how-much-does-bumper-repair-cost.html">
+        <img src="gallery/tahoe-before.jpg" alt="Front bumper with dent and cracked paint damage before repair">
+        <div class="blog-card-body"><span class="blog-kicker">Repair costs</span><h3>How Much Does It Cost to Fix a Dented Bumper?</h3><p>Real price ranges — and what drives the price up or down.</p></div>
+      </a>
+    </div>
+    <p class="blog-more"><a class="btn btn-outline" href="blog.html">Read all articles</a></p>
   </div>
 </section>
 
