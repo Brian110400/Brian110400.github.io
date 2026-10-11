@@ -20,7 +20,7 @@ a{color:inherit}
 header{position:sticky;top:0;z-index:50;background:rgba(14,15,17,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
 .brand{display:flex;align-items:center;gap:12px;text-decoration:none}
-.brand-mark{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--red),var(--red-d));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}
+.brand-logo{height:54px;width:auto;display:block;border-radius:8px}
 .brand-name{font-weight:800;font-size:18px;letter-spacing:.3px;line-height:1.2}
 .brand-name small{display:block;font-weight:500;font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase}
 .nav-links{display:flex;gap:26px;align-items:center}
@@ -144,8 +144,7 @@ footer{border-top:1px solid var(--line);padding:36px 0;color:var(--muted);font-s
 <header>
   <div class="wrap nav">
     <a class="brand" href="#top">
-      <div class="brand-mark">FC</div>
-      <div class="brand-name">First Choice<small>Auto Reconditioning</small></div>
+      <img class="brand-logo" src="logo.webp" alt="First Choice Auto Reconditioning — Quality Body & Paint Repairs">
     </a>
     <nav class="nav-links">
       <a href="#services">Services</a>
