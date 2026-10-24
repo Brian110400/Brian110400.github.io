@@ -304,15 +304,15 @@ footer .wrap{max-width:1180px}
 
 <script>
 var PARTS=[
- {id:'front-bumper',icon:'🚗',name:'Front Bumper Cover',paint:225,shipLow:129,shipHigh:189,side:false},
- {id:'rear-bumper',icon:'🚙',name:'Rear Bumper Cover',paint:225,shipLow:129,shipHigh:189,side:false},
- {id:'fender',icon:'🛞',name:'Fender',paint:195,shipLow:89,shipHigh:139,side:true},
- {id:'hood',icon:'⬜',name:'Hood',paint:325,shipLow:149,shipHigh:219,side:false},
- {id:'mirror',icon:'🪞',name:'Side Mirror / Cap',paint:85,shipLow:24,shipHigh:39,side:true},
- {id:'door',icon:'🚪',name:'Door Shell / Skin',paint:275,shipLow:149,shipHigh:219,side:true},
- {id:'grille',icon:'▦',name:'Grille',paint:95,shipLow:29,shipHigh:49,side:false},
- {id:'tailgate',icon:'🛻',name:'Tailgate / Trunk Lid',paint:295,shipLow:149,shipHigh:219,side:false},
- {id:'spoiler',icon:'〰️',name:'Spoiler / Rocker / Trim',paint:150,shipLow:39,shipHigh:69,side:false}
+ {id:'front-bumper',icon:'🚗',name:'Front Bumper Cover',paint:225,regLow:149,regHigh:219,natLow:199,natHigh:299,side:false},
+ {id:'rear-bumper',icon:'🚙',name:'Rear Bumper Cover',paint:225,regLow:149,regHigh:219,natLow:199,natHigh:299,side:false},
+ {id:'fender',icon:'🛞',name:'Fender',paint:195,regLow:79,regHigh:119,natLow:99,natHigh:149,side:true},
+ {id:'hood',icon:'⬜',name:'Hood',paint:325,regLow:169,regHigh:249,natLow:219,natHigh:329,side:false},
+ {id:'mirror',icon:'🪞',name:'Side Mirror / Cap',paint:85,regLow:24,regHigh:39,natLow:29,natHigh:45,side:true},
+ {id:'door',icon:'🚪',name:'Door Shell / Skin',paint:275,regLow:169,regHigh:249,natLow:219,natHigh:329,side:true},
+ {id:'grille',icon:'▦',name:'Grille',paint:95,regLow:29,regHigh:49,natLow:39,natHigh:59,side:false},
+ {id:'tailgate',icon:'🛻',name:'Tailgate / Trunk Lid',paint:295,regLow:169,regHigh:249,natLow:219,natHigh:329,side:false},
+ {id:'spoiler',icon:'〰️',name:'Spoiler / Rocker / Trim',paint:150,regLow:39,regHigh:69,natLow:49,natHigh:79,side:false}
 ];
 var FAQS=[
  ['How much will it cost?','Paint prices are shown when you pick your part. Quotes are for a CAPA Certified part by default — our standard, for a better fit. The part itself depends on your car and that day’s supplier price, so the shop sends you one confirmed total — part + paint + shipping — for your approval before anything is ordered. If CAPA isn’t available for your vehicle, we’ll use standard aftermarket and tell you first; OEM is available on request. No payment is taken on this page.'],
@@ -382,7 +382,8 @@ $('nextBtn').addEventListener('click',function(){
 });
 
 // review + estimate
-function shipRange(){ if(state.shipMode==='0') return [0,0]; return [state.part.shipLow,state.part.shipHigh]; }
+function isRegionalZip(z){ if(!/^\d{5}$/.test(z||'')) return null; var p=parseInt(z.slice(0,3),10); var R=[[220,268],[270,299],[300,319],[320,349],[350,369],[370,385],[398,399],[400,427]]; for(var i=0;i<R.length;i++){ if(p>=R[i][0]&&p<=R[i][1]) return true; } return false; }
+function shipRange(){ if(state.shipMode==='0') return [0,0]; var reg=isRegionalZip($('custZip').value.trim()); if(reg===true) return [state.part.regLow,state.part.regHigh]; if(reg===false) return [state.part.natLow,state.part.natHigh]; return [state.part.regLow,state.part.natHigh]; }
 function renderReview(){
  var pc=$('paintCode').value.trim();
  var rows=[
@@ -396,7 +397,7 @@ function renderReview(){
  if(state.shipMode==='0'){
    $('estLine').innerHTML='Ballpark for paint: <b>'+money(low)+'</b> — the shop adds the part price and sends your confirmed total. No payment now.';
  } else {
-   $('estLine').innerHTML='Ballpark for paint + shipping: <b>'+money(low)+'–'+money(high)+'</b> — the shop adds the part price and sends your confirmed total. No payment now.';
+   $('estLine').innerHTML='Ballpark for paint + shipping: <b>'+money(low)+'–'+money(high)+'</b> — estimated shipping based on your ZIP; your final shipping is confirmed on your invoice before we paint. Large parts ship freight — delivery to a business or terminal can cost less than home delivery. The shop adds the part price and sends your confirmed total. No payment now.';
  }
 }
 
