@@ -256,7 +256,7 @@ footer .wrap{max-width:1180px}
     <!-- STEP 5 -->
     <div class="wstep" data-step="5">
       <h2>Step 5 — Send it to the shop</h2>
-      <p class="sub">Check it over, add your name and phone, and send. The shop replies with your confirmed price — part + paint + shipping — before any work starts.</p>
+      <p class="sub">Check it over, add your name and phone, and send — your request goes straight to the shop. We reply by email with your confirmed price — part + paint + shipping — before any work starts.</p>
       <div class="review" id="reviewBox"></div>
       <div class="est-line" id="estLine"></div>
       <p class="pay-repeat"><b>How you pay:</b> No payment now. We confirm your total and send you an invoice to pay online by card or bank — we order and paint after it’s paid in full.</p>
@@ -266,8 +266,8 @@ footer .wrap{max-width:1180px}
         <div class="field full"><label>Email <small>(optional)</small></label><input id="custEmail" type="email" placeholder="you@email.com"/></div>
       </div>
       <div class="success" id="successBox">
-        <b style="font-size:1.05rem">✅ Order summary created — Ref <span id="refOut"></span></b>
-        <p style="margin:6px 0 0">Send it to the shop one of these ways and we’ll reply with your confirmed quote:</p>
+        <b style="font-size:1.05rem" id="successTitle">Sending your request to the shop…</b>
+        <p style="margin:6px 0 0" id="successSub">One moment — sending now.</p>
         <div class="action-row">
           <a class="btn btn-black" id="emailBtn" href="#">✉️ Email it to First Choice</a>
           <button class="btn btn-ghost" id="copyBtn" type="button">Copy summary</button>
@@ -363,7 +363,7 @@ function goTo(n){
  $('progFill').style.width=(n*20)+'%';
  $('backBtn').style.display=n===1?'none':'inline-flex';
  $('skipBtn').style.display=n===4?'inline-flex':'none';
- $('nextBtn').textContent=n===5?'Create My Order Summary →':'Next →';
+ $('nextBtn').textContent=n===5?'Send My Quote Request →':'Next →';
  hideError();
  if(n===5) renderReview();
  $('wizard').scrollIntoView({behavior:'smooth',block:'start'});
@@ -406,7 +406,6 @@ function submitOrder(){
  if(!$('custPhone').value.trim()){ showError('Please add your phone — that’s how the shop sends your quote.'); $('custPhone').focus(); return; }
  hideError();
  var ref='FC-PP-'+Math.random().toString(36).slice(2,7).toUpperCase();
- $('refOut').textContent=ref;
  var sr=shipRange(); var low=state.part.paint+state.finishAdd+sr[0], high=state.part.paint+state.finishAdd+sr[1];
  var pc=$('paintCode').value.trim();
  var lines=[
@@ -437,6 +436,31 @@ function submitOrder(){
  $('copyBtn').onclick=function(){ if(navigator.clipboard){navigator.clipboard.writeText(lines); $('copyBtn').textContent='Copied ✓'; setTimeout(function(){$('copyBtn').textContent='Copy summary'},1800);} };
  $('dlBtn').onclick=function(){ var b=new Blob([lines],{type:'text/plain'}); var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='FirstChoice-PaintedPart-'+ref+'.txt'; a.click(); };
  $('successBox').scrollIntoView({behavior:'smooth',block:'center'});
+ // Direct send to the shop inbox (FormSubmit). Backup options above stay available.
+ var btn=$('nextBtn'); btn.disabled=true; var origLabel=btn.textContent; btn.textContent='Sending…';
+ var subj='Painted Part Order '+ref+' — '+$('year').value+' '+$('make').value+' '+$('model').value+' '+state.part.name;
+ fetch('https://formsubmit.co/ajax/firstchoice61010@gmail.com',{
+   method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'},
+   body: JSON.stringify({ _subject:subj, _template:'box', _captcha:'false', name:$('custName').value, phone:$('custPhone').value, email:$('custEmail').value||'', message:lines })
+ }).then(function(r){ return r.json().catch(function(){return {}}).then(function(d){ return {ok:r.ok,d:d}; }); })
+ .then(function(res){
+   btn.disabled=false; btn.textContent=origLabel;
+   var msg=(res.d && res.d.message)? String(res.d.message):'';
+   if(res.ok && !/activat/i.test(msg)){
+     $('successTitle').textContent='✅ Quote request sent — Ref '+ref;
+     $('successSub').textContent='The shop has your request now. We’ll reply by email with your confirmed quote. (Backup options below, just in case.)';
+   } else if(/activat/i.test(msg)){
+     $('successTitle').textContent='✅ Quote request received — Ref '+ref;
+     $('successSub').textContent='Your request is on its way to the shop. We’ll reply by email with your confirmed quote. (Backup options below, just in case.)';
+   } else {
+     $('successTitle').textContent='⚠️ Automatic send didn’t go through — Ref '+ref;
+     $('successSub').textContent='Please use one of these backup options so the shop gets your request:';
+   }
+ }).catch(function(){
+   btn.disabled=false; btn.textContent=origLabel;
+   $('successTitle').textContent='⚠️ Automatic send didn’t go through — Ref '+ref;
+   $('successSub').textContent='Please use one of these backup options so the shop gets your request:';
+ });
 }
 
 // FAQ
