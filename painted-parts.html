@@ -483,7 +483,9 @@ window.addEventListener('scroll',function(){var c=document.querySelector('.stick
  var picked=ids.map(function(id){return MAP[id];}).filter(Boolean);
  if(!picked.length) return;
  var b=document.getElementById('shopBanner');
- b.innerHTML='<b>\uD83D\uDED2 From our Facebook Shop \u2014 you picked:</b><br>'+picked.map(function(p){return p.label+' \u2014 from $'+p.price+' (part + paint, local pickup)';}).join('<br>')+'<br>It\u2019s already selected in the form below \u2014 just tell us your car and paint code, and we\u2019ll confirm your exact total by email before anything is painted.';
+ var items=ids.map(function(id,i){return {m:MAP[id],q:(raw.split(',')[i].split(':')[1]||'1')};}).filter(function(x){return x.m;});
+ var subtotal=items.reduce(function(t,x){return t+(x.m.price*(parseInt(x.q,10)||1));},0);
+ b.innerHTML='<b>\uD83D\uDED2 Checkout \u2014 your order from our Facebook Shop</b><br>'+items.map(function(x){return x.q+' \u00D7 '+x.m.label+' \u2014 from $'+(x.m.price*(parseInt(x.q,10)||1))+' (part + paint, local pickup)';}).join('<br>')+'<br><b>Cart subtotal: from $'+subtotal+'</b> \u2014 painted to order, so no payment now: your part is already selected in the checkout form below. Tell us your car and paint code, and we\u2019ll email your confirmed total (part + paint + shipping) before anything is painted.';
  b.style.display='block';
  var btn=document.querySelector('#partGrid [data-id="'+picked[0].part+'"]');
  if(btn) btn.click();
