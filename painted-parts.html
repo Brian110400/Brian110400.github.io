@@ -275,6 +275,9 @@ footer .wrap{max-width:1180px}
           <button type="button" class="big-opt active" data-val="Ship to me" data-ship="auto"><b>🚚 Ship it to me</b><span>Shipped unfolded &amp; insured to your door.</span></button>
           <button type="button" class="big-opt" data-val="Local pickup — Taylors, SC" data-ship="0"><b>📍 I’ll pick it up</b><span>Free pickup at 221 W Main St, Taylors. Ask about install, too.</span></button>
         </div>
+        <div class="form-grid" id="zipWrap" style="margin-top:16px">
+          <div class="field"><label>Your ZIP code <small>— for your shipping estimate</small></label><input id="custZip3" placeholder="e.g. 90210" maxlength="5" inputmode="numeric"/></div>
+        </div>
       </div>
     </div>
 
@@ -312,7 +315,7 @@ footer .wrap{max-width:1180px}
       <div class="form-grid" style="margin-top:18px">
         <div class="field"><label>Your name *</label><input id="custName" placeholder="Full name"/></div>
         <div class="field"><label>Phone *</label><input id="custPhone" placeholder="(864) 555-0123"/></div>
-        <div class="field full"><label>Email <small>(optional)</small></label><input id="custEmail" type="email" placeholder="you@email.com"/></div>
+        <div class="field full"><label>Email * <small>— your confirmed quote comes by email, so please double-check it</small></label><input id="custEmail" type="email" placeholder="you@email.com"/></div>
       </div>
       <div class="success" id="successBox">
         <b style="font-size:1.05rem" id="successTitle">Sending your request to the shop…</b>
@@ -363,7 +366,7 @@ var PARTS=[
 var FAQS=[
  ['How much will it cost?','Paint prices are shown when you pick your part. Quotes are for a CAPA Certified part by default — our standard, for a better fit. The part itself depends on your car and that day’s supplier price, so the shop sends you one confirmed total — part + paint + shipping — for your approval before anything is ordered. If CAPA isn’t available for your vehicle, we’ll use standard aftermarket and tell you first; OEM is available on request. No payment is taken on this page.'],
  ['How exact will the color match be?','We mix to your factory paint code and check it under color-match light before the part ships. On a well-kept car it’s a very close match. Older paint can fade in the sun — if we think that’s a factor on your car, we’ll tell you up front.'],
- ['How long does it take?','Once the part is in hand, most parts are painted, cured, packed and shipped within 3 business days, plus supplier and transit time. Local pickup in Taylors is fastest.']
+ ['How long does it take?','Once the part is in hand, most parts are painted, cured, packed and shipped within 3 business days, plus supplier and transit time. Local pickup is fastest if you are in the Upstate.']
 ];
 var state={step:1,part:null,side:'Driver side (left)',shipMode:'auto',shipName:'Ship to me',finishAdd:0,finishName:'Solid / standard',source:'CAPA Certified — shop standard'};
 var STEP_NAMES={1:'Your car',2:'Pick your part',3:'Color & delivery',4:'Anything else?',5:'Send it'};
@@ -373,7 +376,7 @@ function money(n){return '$'+n.toLocaleString()}
 
 // year + make selects
 (function(){var y=$('year');for(var i=2026;i>=1995;i--){var o=document.createElement('option');o.textContent=i;y.appendChild(o)} y.value='2020';
-var mk=['Acura','Audi','BMW','Buick','Cadillac','Chevrolet','Chrysler','Dodge','Ford','Genesis','GMC','Honda','Hyundai','Infiniti','Jeep','Kia','Lexus','Lincoln','Mazda','Mercedes-Benz','Mitsubishi','Nissan','Ram','Subaru','Tesla','Toyota','Volkswagen','Volvo','Other'];
+var mk=['Acura','Alfa Romeo','Audi','BMW','Buick','Cadillac','Chevrolet','Chrysler','Dodge','Fiat','Ford','Genesis','GMC','Honda','Hummer','Hyundai','Infiniti','Jaguar','Jeep','Kia','Land Rover','Lexus','Lincoln','Mazda','Mercedes-Benz','Mercury','MINI','Mitsubishi','Nissan','Pontiac','Porsche','Ram','Saturn','Subaru','Tesla','Toyota','Volkswagen','Volvo','Other'];
 var m=$('make');mk.forEach(function(x){var o=document.createElement('option');o.textContent=x;m.appendChild(o)}); m.value='Toyota';})();
 
 // part choices
@@ -396,7 +399,11 @@ pillGroup('sourcePills',function(p){state.source=p.dataset.val});
 document.querySelectorAll('#shipOpts .big-opt').forEach(function(b){b.addEventListener('click',function(){
  document.querySelectorAll('#shipOpts .big-opt').forEach(function(x){x.classList.remove('active')});
  b.classList.add('active'); state.shipMode=b.dataset.ship; state.shipName=b.dataset.val;
+ var zw=$('zipWrap'); if(zw) zw.style.display=(b.dataset.ship==='0')?'none':'block';
 })});
+// ZIP lives on step 3 (shipping) and step 4 — keep both boxes in sync; either one counts
+function zipVal(){ var a=$('custZip3')? $('custZip3').value.trim():''; var b=$('custZip')? $('custZip').value.trim():''; return a||b; }
+(function(){ var z3=$('custZip3'), z4=$('custZip'); if(z3&&z4){ z3.addEventListener('input',function(){ z4.value=z3.value; }); z4.addEventListener('input',function(){ z3.value=z4.value; }); } })();
 
 // wizard navigation
 function showError(msg){var e=$('wizError');e.textContent=msg;e.classList.add('show');e.scrollIntoView({behavior:'smooth',block:'center'})}
@@ -427,16 +434,19 @@ $('nextBtn').addEventListener('click',function(){
  else { submitOrder(); }
 });
 
+(function(){ var ce=$('custEmail'); if(ce){ ce.addEventListener('input',function(){ var r=$('revEmail'); if(r) r.textContent=ce.value.trim()||'the email you add below'; }); } })();
+
 // review + estimate
 function isRegionalZip(z){ if(!/^\d{5}$/.test(z||'')) return null; var p=parseInt(z.slice(0,3),10); var R=[[220,268],[270,299],[300,319],[320,349],[350,369],[370,385],[398,399],[400,427]]; for(var i=0;i<R.length;i++){ if(p>=R[i][0]&&p<=R[i][1]) return true; } return false; }
-function shipRange(){ if(state.shipMode==='0') return [0,0]; var reg=isRegionalZip($('custZip').value.trim()); if(reg===true) return [state.part.regLow,state.part.regHigh]; if(reg===false) return [state.part.natLow,state.part.natHigh]; return [state.part.regLow,state.part.natHigh]; }
+function shipRange(){ if(state.shipMode==='0') return [0,0]; var reg=isRegionalZip(zipVal()); if(reg===true) return [state.part.regLow,state.part.regHigh]; if(reg===false) return [state.part.natLow,state.part.natHigh]; return [state.part.regLow,state.part.natHigh]; }
 function renderReview(){
  var pc=$('paintCode').value.trim();
  var rows=[
   ['Car',($('year').value+' '+$('make').value+' '+$('model').value).trim()],
   ['Part',state.part.name+(state.part.side?' — '+state.side:'')],
   ['Paint code', pc? pc.toUpperCase() : 'Not sure — shop will help'],
-  ['Delivery',state.shipName]
+  ['Delivery',state.shipName],
+  ['Quote goes to','<span id="revEmail">'+($('custEmail').value.trim()||'the email you add below')+'</span>']
  ];
  $('reviewBox').innerHTML=rows.map(function(r){return '<div><span>'+r[0]+'</span><b>'+r[1]+'</b></div>'}).join('');
  var sr=shipRange(); var low=state.part.paint+state.finishAdd+sr[0], high=state.part.paint+state.finishAdd+sr[1];
@@ -450,7 +460,8 @@ function renderReview(){
 // submit
 function submitOrder(){
  if(!$('custName').value.trim()){ showError('Please add your name so the shop knows who to reply to.'); $('custName').focus(); return; }
- if(!$('custPhone').value.trim()){ showError('Please add your phone — that’s how the shop sends your quote.'); $('custPhone').focus(); return; }
+ if(!$('custPhone').value.trim()){ showError('Please add your phone — in case the shop needs to reach you about your quote.'); $('custPhone').focus(); return; }
+ if(!$('custEmail').value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('custEmail').value.trim())){ showError('Please add a valid email — your confirmed quote is sent by email. Please double-check the address.'); $('custEmail').focus(); return; }
  hideError();
  var ref='FC-PP-'+Math.random().toString(36).slice(2,7).toUpperCase();
  var sr=shipRange(); var low=state.part.paint+state.finishAdd+sr[0], high=state.part.paint+state.finishAdd+sr[1];
@@ -467,9 +478,9 @@ function submitOrder(){
   state.source.indexOf('own part')>-1? null : 'Part standard: CAPA Certified (default)',
   pc? 'Paint code: '+pc.toUpperCase()+( $('colorName').value? ' ('+$('colorName').value+')':'') : 'Paint code: NOT SURE — customer asked for help finding it',
   'Finish: '+state.finishName,
-  'Delivery: '+state.shipName+( $('custZip').value? ' — ZIP '+$('custZip').value : ''),
+  'Delivery: '+state.shipName+( zipVal()? ' — ZIP '+zipVal() : ''),
   '----------------------------------------',
-  'Ballpark (paint + ship, part extra): '+(sr[0]===0? money(low) : money(low)+'–'+money(high)),
+  (sr[0]===0? 'Ballpark (paint, part extra): '+money(low) : 'Ballpark (paint + ship, part extra): '+money(low)+'–'+money(high)),
   'Name: '+$('custName').value,
   'Phone: '+$('custPhone').value,
   $('custEmail').value? 'Email: '+$('custEmail').value : null,
@@ -491,15 +502,17 @@ function submitOrder(){
    body: JSON.stringify({ _subject:subj, _template:'box', _captcha:'false', name:$('custName').value, phone:$('custPhone').value, email:$('custEmail').value||'', message:lines })
  }).then(function(r){ return r.json().catch(function(){return {}}).then(function(d){ return {ok:r.ok,d:d}; }); })
  .then(function(res){
-   btn.disabled=false; btn.textContent=origLabel;
    var msg=(res.d && res.d.message)? String(res.d.message):'';
    if(res.ok && !/activat/i.test(msg)){
+     btn.disabled=true; btn.textContent='Request sent ✓ — please don’t send it twice';
      $('successTitle').textContent='✅ Quote request sent — Ref '+ref;
      $('successSub').textContent='The shop has your request now. We’ll reply by email with your confirmed quote. (Backup options below, just in case.)';
    } else if(/activat/i.test(msg)){
+     btn.disabled=true; btn.textContent='Request sent ✓ — please don’t send it twice';
      $('successTitle').textContent='✅ Quote request received — Ref '+ref;
      $('successSub').textContent='Your request is on its way to the shop. We’ll reply by email with your confirmed quote. (Backup options below, just in case.)';
    } else {
+     btn.disabled=false; btn.textContent=origLabel;
      $('successTitle').textContent='⚠️ Automatic send didn’t go through — Ref '+ref;
      $('successSub').textContent='Please use one of these backup options so the shop gets your request:';
    }
