@@ -329,12 +329,12 @@ footer .wrap{max-width:1180px}
       <div class="success" id="successBox">
         <b style="font-size:1.05rem" id="successTitle">Sending your request to the shop…</b>
         <p style="margin:6px 0 0" id="successSub">One moment — sending now.</p>
-        <div class="action-row">
+        <div class="action-row" id="backupRow" style="display:none">
           <a class="btn btn-black" id="emailBtn" href="#">✉️ Email it to First Choice</a>
           <button class="btn btn-ghost" id="copyBtn" type="button">Copy summary</button>
           <button class="btn btn-ghost" id="dlBtn" type="button">Download summary</button>
         </div>
-        <pre id="summaryText" style="white-space:pre-wrap;background:rgba(255,255,255,.65);border-radius:10px;padding:12px;font-size:.86rem;margin-top:12px;overflow:auto"></pre>
+        <pre id="summaryText" style="display:none;white-space:pre-wrap;background:rgba(255,255,255,.65);border-radius:10px;padding:12px;font-size:.86rem;margin-top:12px;overflow:auto"></pre>
       </div>
     </div>
 
@@ -524,19 +524,21 @@ function submitOrder(){
      trackEvent('wizard_complete',{part_id:state.part?state.part.id:'',delivery:state.shipMode==='0'?'pickup':'ship',finish:state.finishName});
      btn.disabled=true; btn.textContent='Request sent ✓ — please don’t send it twice';
      $('successTitle').textContent='✅ Quote request sent — Ref '+ref;
-     $('successSub').textContent='The shop has your request now. We’ll reply by email with your confirmed quote. (Backup options below, just in case.)';
+     $('successSub').textContent='The shop has your request now. We’ll reply by email with your confirmed quote.';
    } else if(/activat/i.test(msg)){
      btn.disabled=true; btn.textContent='Request sent ✓ — please don’t send it twice';
      $('successTitle').textContent='✅ Quote request received — Ref '+ref;
-     $('successSub').textContent='Your request is on its way to the shop. We’ll reply by email with your confirmed quote. (Backup options below, just in case.)';
+     $('successSub').textContent='Your request is on its way to the shop. We’ll reply by email with your confirmed quote.';
    } else {
      trackEvent('wizard_submit_error',{part_id:state.part?state.part.id:''});
+     $('backupRow').style.display=''; $('summaryText').style.display='block';
      btn.disabled=false; btn.textContent=origLabel;
      $('successTitle').textContent='⚠️ Automatic send didn’t go through — Ref '+ref;
      $('successSub').textContent='Please use one of these backup options so the shop gets your request:';
    }
  }).catch(function(){
    trackEvent('wizard_submit_error',{part_id:state.part?state.part.id:''});
+   $('backupRow').style.display=''; $('summaryText').style.display='block';
    btn.disabled=false; btn.textContent=origLabel;
    $('successTitle').textContent='⚠️ Automatic send didn’t go through — Ref '+ref;
    $('successSub').textContent='Please use one of these backup options so the shop gets your request:';
