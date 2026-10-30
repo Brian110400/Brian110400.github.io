@@ -379,6 +379,10 @@ var FAQS=[
 var state={step:1,part:null,side:'Driver side (left)',shipMode:'auto',shipName:'Ship to me',finishAdd:0,finishName:'Solid / standard',source:'CAPA Certified — shop standard'};
 var STEP_NAMES={1:'Your car',2:'Pick your part',3:'Color & delivery',4:'Anything else?',5:'Send it'};
 
+// GA4 funnel tracking for the quote wizard (no personal info is sent)
+function trackEvent(name,params){ if(typeof gtag==='function'){ try{ gtag('event',name,params||{}); }catch(e){} } }
+function trackStepView(n){ trackEvent('wizard_step_view',{step_number:n,step_name:STEP_NAMES[n],part_id:state.part?state.part.id:''}); }
+
 function $(id){return document.getElementById(id)}
 function money(n){return '$'+n.toLocaleString()}
 
@@ -393,6 +397,7 @@ document.querySelectorAll('.part-choice').forEach(function(b){b.addEventListener
  document.querySelectorAll('.part-choice').forEach(function(x){x.classList.remove('active')});
  b.classList.add('active');
  state.part=PARTS.find(function(x){return x.id===b.dataset.id});
+ trackEvent('wizard_part_selected',{part_id:state.part.id,part_name:state.part.name});
  $('sideWrap').style.display=state.part.side?'block':'none';
  hideError();
 })});
@@ -426,13 +431,14 @@ function goTo(n){
  $('skipBtn').style.display=n===4?'inline-flex':'none';
  $('nextBtn').textContent=n===5?'Send My Quote Request →':'Next →';
  hideError();
+ trackStepView(n);
  if(n===5) renderReview();
  $('wizard').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function validate(n){
- if(n===1){ if(!$('model').value.trim()){ showError('Please add your car’s model so we can find the right part.'); $('model').focus(); return false; } }
- if(n===2){ if(!state.part){ showError('Please tap the part you need.'); return false; } }
- if(n===3){ if(!$('paintCode').value.trim() && !$('noCode').checked){ showError('Add your paint code — or check “I don’t know my paint code” and we’ll help.'); $('paintCode').focus(); return false; } }
+ if(n===1){ if(!$('model').value.trim()){ trackEvent('wizard_error',{step_number:n,error_code:'missing_model'}); showError('Please add your car’s model so we can find the right part.'); $('model').focus(); return false; } }
+ if(n===2){ if(!state.part){ trackEvent('wizard_error',{step_number:n,error_code:'missing_part'}); showError('Please tap the part you need.'); return false; } }
+ if(n===3){ if(!$('paintCode').value.trim() && !$('noCode').checked){ trackEvent('wizard_error',{step_number:n,error_code:'missing_paint_code'}); showError('Add your paint code — or check “I don’t know my paint code” and we’ll help.'); $('paintCode').focus(); return false; } }
  return true;
 }
 $('backBtn').addEventListener('click',function(){ if(state.step>1) goTo(state.step-1); });
@@ -441,6 +447,7 @@ $('nextBtn').addEventListener('click',function(){
  if(state.step<5){ if(validate(state.step)) goTo(state.step+1); }
  else { submitOrder(); }
 });
+trackStepView(1);
 
 (function(){ var ce=$('custEmail'); if(ce){ ce.addEventListener('input',function(){ var r=$('revEmail'); if(r) r.textContent=ce.value.trim()||'the email you add below'; }); } })();
 
@@ -467,9 +474,9 @@ function renderReview(){
 
 // submit
 function submitOrder(){
- if(!$('custName').value.trim()){ showError('Please add your name so the shop knows who to reply to.'); $('custName').focus(); return; }
- if(!$('custPhone').value.trim()){ showError('Please add your phone — in case the shop needs to reach you about your quote.'); $('custPhone').focus(); return; }
- if(!$('custEmail').value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('custEmail').value.trim())){ showError('Please add a valid email — your confirmed quote is sent by email. Please double-check the address.'); $('custEmail').focus(); return; }
+ if(!$('custName').value.trim()){ trackEvent('wizard_error',{step_number:5,error_code:'missing_name'}); showError('Please add your name so the shop knows who to reply to.'); $('custName').focus(); return; }
+ if(!$('custPhone').value.trim()){ trackEvent('wizard_error',{step_number:5,error_code:'missing_phone'}); showError('Please add your phone — in case the shop needs to reach you about your quote.'); $('custPhone').focus(); return; }
+ if(!$('custEmail').value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('custEmail').value.trim())){ trackEvent('wizard_error',{step_number:5,error_code:'invalid_email'}); showError('Please add a valid email — your confirmed quote is sent by email. Please double-check the address.'); $('custEmail').focus(); return; }
  hideError();
  var ref='FC-PP-'+Math.random().toString(36).slice(2,7).toUpperCase();
  var sr=shipRange(); var low=state.part.paint+state.finishAdd+sr[0], high=state.part.paint+state.finishAdd+sr[1];
@@ -503,6 +510,7 @@ function submitOrder(){
  $('dlBtn').onclick=function(){ var b=new Blob([lines],{type:'text/plain'}); var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='FirstChoice-PaintedPart-'+ref+'.txt'; a.click(); };
  $('successBox').scrollIntoView({behavior:'smooth',block:'center'});
  // Direct send to the shop inbox (FormSubmit). Backup options above stay available.
+ trackEvent('wizard_submit_attempt',{part_id:state.part?state.part.id:'',delivery:state.shipMode==='0'?'pickup':'ship',finish:state.finishName,source:state.source});
  var btn=$('nextBtn'); btn.disabled=true; var origLabel=btn.textContent; btn.textContent='Sending…';
  var subj='Painted Part Order '+ref+' — '+$('year').value+' '+$('make').value+' '+$('model').value+' '+state.part.name;
  fetch('https://formsubmit.co/ajax/firstchoice61010@gmail.com',{
@@ -512,6 +520,8 @@ function submitOrder(){
  .then(function(res){
    var msg=(res.d && res.d.message)? String(res.d.message):'';
    if(res.ok && !/activat/i.test(msg)){
+     trackEvent('generate_lead',{part_id:state.part?state.part.id:'',delivery:state.shipMode==='0'?'pickup':'ship',finish:state.finishName});
+     trackEvent('wizard_complete',{part_id:state.part?state.part.id:'',delivery:state.shipMode==='0'?'pickup':'ship',finish:state.finishName});
      btn.disabled=true; btn.textContent='Request sent ✓ — please don’t send it twice';
      $('successTitle').textContent='✅ Quote request sent — Ref '+ref;
      $('successSub').textContent='The shop has your request now. We’ll reply by email with your confirmed quote. (Backup options below, just in case.)';
@@ -520,11 +530,13 @@ function submitOrder(){
      $('successTitle').textContent='✅ Quote request received — Ref '+ref;
      $('successSub').textContent='Your request is on its way to the shop. We’ll reply by email with your confirmed quote. (Backup options below, just in case.)';
    } else {
+     trackEvent('wizard_submit_error',{part_id:state.part?state.part.id:''});
      btn.disabled=false; btn.textContent=origLabel;
      $('successTitle').textContent='⚠️ Automatic send didn’t go through — Ref '+ref;
      $('successSub').textContent='Please use one of these backup options so the shop gets your request:';
    }
  }).catch(function(){
+   trackEvent('wizard_submit_error',{part_id:state.part?state.part.id:''});
    btn.disabled=false; btn.textContent=origLabel;
    $('successTitle').textContent='⚠️ Automatic send didn’t go through — Ref '+ref;
    $('successSub').textContent='Please use one of these backup options so the shop gets your request:';
